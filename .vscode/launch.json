@@ -14,7 +14,7 @@
                 "ts-node/esm"
             ],
             "program": "${workspaceFolder}//index.ts",
-            "args": ["kuku"]
+            "env": {"NODE_ENV": "dev"}
         }
 
     ]
