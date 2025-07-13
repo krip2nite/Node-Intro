@@ -1,6 +1,5 @@
-import _ from 'lodash';
-
-const {argv} = process;
-const length = argv[2] ? +argv[2] : 5;
-const a: number[] = Array.from({length}, () => _.random(10, 20));
-console.log("random number are", a);
+import os from 'node:os'
+const MGB_FACTOR = 1024 * 1024 
+console.log(`free memory is ${Math.round(os.freemem()) / MGB_FACTOR} Mgb`);
+console.log(`total memory is ${Math.round(os.totalmem()) / MGB_FACTOR} Mgb`)
+console.log("number of CPU's is " + os.cpus().length);
