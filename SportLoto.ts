@@ -56,8 +56,7 @@ function generateUniqueRandomNumbers(amount: number, min: number, max: number): 
     if (amount > rangeSize) {
         const errorMessage = `Error: Cannot generate ${amount} unique numbers within the range [${min}, ${max}]. 
         The maximum unique numbers possible in this range is ${rangeSize}.`;
-        console.error(errorMessage);
-        process.exit(1);
+        throw `${errorMessage}`
     }
 
     const allNumbersInRange: number[] = _.range(min, max + 1);
@@ -67,9 +66,13 @@ function generateUniqueRandomNumbers(amount: number, min: number, max: number): 
     return randomNumbers;
 }
 
-
+try{
 const { amount, min, max }: ParsedArgs = parseArguments();
 let randomNumbers: number[] = generateUniqueRandomNumbers(amount, min, max);
 randomNumbers = _.sortBy(randomNumbers);
 console.log("Generated Random Unique Numbers:", randomNumbers.join(', '));
-
+}
+catch(e)
+{
+    console.log(e);
+}
