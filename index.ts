@@ -1,6 +1,6 @@
-import _ from 'lodash';
-
-const {argv} = process;
-const length = argv[2] ? +argv[2] : 5;
-const a: number[] = Array.from({length}, () => _.random(10, 20));
-console.log("random number are", a);
+import { readFile } from "fs/promises";
+async function readFileAndSize(path: string): Promise<number> {
+    const content = await readFile(path, {encoding: 'binary'})
+    return content.length;
+}
+readFileAndSize("large_file").then(length => console.log(length))
