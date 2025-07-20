@@ -1,24 +1,58 @@
 import EventEmitter from "events";
-type LogLevel = "severe"|"warn"|"info"|"debug"|"trace"
+import config from "config";
+type LogLevel = "severe" | "warn" | "info" | "debug" | "trace";
+
+const logDef: {[level in LogLevel]: number} = {
+  severe: 1,
+  warn: 2,
+  info: 3,
+  debug: 4,
+  trace: 5,
+};
+
+const CONFIG_LOG_LEVEL_NAME = "log_level";
+const DEFAULT_CONFIG_LEVEL: LogLevel = "info";
 class Logger extends EventEmitter{
-    addHandlerLevel(level: LogLevel, handler : (message: string) =>void):void {
+    configLevel: LogLevel = DEFAULT_CONFIG_LEVEL;
+    logWrongConfig = false;
+    logConfigLevel = true;
+    constructor() {
+        super();
+        if (config.has(CONFIG_LOG_LEVEL_NAME)) {
+            this.configLevel =
+                config.get<LogLevel>(CONFIG_LOG_LEVEL_NAME);
+            if (!logDef[this.configLevel]) {
+                this.logWrongConfig = true;
+                this.configLevel = DEFAULT_CONFIG_LEVEL;
+            }
+        }
+
+    }
+    addHandlerLevel(level: LogLevel, handler: (message: string) => void): void {
         this.on(level, handler);
     }
-    addHandlerMessage(handler: (obj: {level: LogLevel, message: string})=>void):void {
+    addHandlerMessage(
+        handler: (obj: { level: LogLevel; message: string }) => void
+    ): void {
         this.on("message", handler);
     }
-    log(level: LogLevel, message: string):void {
+    log(level: LogLevel, message: string): void {
+        this.logWrongConfig && this.emitMessage(
+            "warn",
+            `config contains wrong log level, set to ${DEFAULT_CONFIG_LEVEL}`
+        );
+        this.logConfigLevel && this.emitMessage("info", `logger level is ${this.configLevel}`);
         this.emit(level, message);
-        //TODO
-        //folowing emit should be performed only for matching specified level
-        //config should contain property log_level
-        //default value is "info"
-        //log_level is severe - only message with level severe may be logged
-        //log_level is warn - messages with levels severe and warn may be logged
-        //log_level is info or default value - messages with levels severe,warn and info may be logged
-        //log_level is debug - all messages except ones with level trace may be logged
-        //log_level is trace - all messages with any log level may be logged 
-        this.emit("message", {level, message})
+
+        this.emitMessage(level, message);
+        this.logWrongConfig = false;
+        this.logConfigLevel = false;
+    }
+
+    private emitMessage(level: string, message: string) {
+        if (logDef[level] <= logDef[this.configLevel]) {
+            this.emit("message", { level, message });
+        }
     }
 }
 export default Logger;
