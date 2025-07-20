@@ -1,6 +1,10 @@
-import { readFile } from "fs/promises";
-async function readFileAndSize(path: string): Promise<number> {
-    const content = await readFile(path, {encoding: 'binary'})
-    return content.length;
-}
-readFileAndSize("large_file").then(length => console.log(length))
+//Readable Stream
+import { createReadStream } from "node:fs";
+let length = 0;
+const stream = createReadStream("large_file", {encoding: 'binary', highWaterMark: 1024 * 1024 * 10});
+stream.on("data", chunk => {
+    // console.log(`chunk with ${chunk.length} bites`)
+    length += chunk.length
+});
+stream.on("end", () => console.log("size =", length))
+stream.on("error", (error) => console.log(error.message))
