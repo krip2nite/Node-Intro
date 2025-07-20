@@ -1,10 +1,5 @@
-//Readable Stream
-import { createReadStream } from "node:fs";
-let length = 0;
-const stream = createReadStream("large_file", {encoding: 'binary', highWaterMark: 1024 * 1024 * 10});
-stream.on("data", chunk => {
-    // console.log(`chunk with ${chunk.length} bites`)
-    length += chunk.length
-});
-stream.on("end", () => console.log("size =", length))
-stream.on("error", (error) => console.log(error.message))
+import CounterStream from "./CounterStream.ts";
+const counterStream = new CounterStream(100);
+counterStream.on('data', num => console.log(num));
+counterStream.on('end', () => console.log("all numbers stream"))
+counterStream.on('error', err =>console.log(err.message))
