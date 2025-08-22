@@ -1,44 +1,39 @@
-import http from 'node:http';
+import express, {Response, Request} from 'express';
 import CalculationData from '../model/CalculationData.ts';
 import calculator, { WrongOperationError } from '../service/calculator.ts'
-const server = http.createServer();
-const port = 3500;
+import { validation } from '../middleware/validation.ts';
 
-server.listen(port, () => console.log("listening on port " + port));
-server.on("request", async (req, res) => {
-    res.statusCode = 200;
+const app = express();
+const port = 3500;
+app.listen(port, () => console.log(`listening on port ${port}`));
+app.use(express.json());
+app.use(validation)
+app.post("/api/calculator", (req: Request & {error: Error}, res: Response) => {
     try {
-        const calculationData: CalculationData = await getData(req);
-        const result = calculator.calculate(calculationData);
+        if(!req.body){
+            throw req.error
+        }
+        const result = calculator.calculate(req.body as CalculationData)
         sendResponse(res, 200, result);
     } catch (error) {
-        const statusCode = error instanceof WrongOperationError ? 404 : 400
-        sendResponse(res, statusCode, error.message)
-    }
+        const status = error instanceof WrongOperationError ? 404 : 400;
+        sendResponse(res, status, error.message)
+    }    
 })
-function sendResponse(res: http.ServerResponse<http.IncomingMessage> & { req: http.IncomingMessage; }, statusCode: number, result: number | string) {
-   res.statusCode = statusCode;
-   res.end(result + "");
-}
+app.get("/api/calculator/:operation/:op1/:op2", validation, (req: Request & {error: Error}, res: Response)=> {
+    try {
+        if(!req.body){
+            throw req.error
+        }
+        const result = calculator.calculate(req.params as any)
+        sendResponse(res, 200, result);
+    } catch (error) {
+        const status = error instanceof WrongOperationError ? 404 : 400;
+        sendResponse(res, status, error.message)
+    } 
+})
 
-async function getData(req: http.IncomingMessage): Promise<CalculationData> {
-   let data = "";
-   for await (let chunk of req) {
-      data += chunk;
-   }
-   const parsedData = JSON.parse(data);
-   dataValidation(parsedData)
-   return parsedData as CalculationData;
-}
-
-function dataValidation(parsedData: any): void {
-   if (!parsedData.operation || typeof parsedData.operation != "string") {
-      throw new Error("field operation of 'string' type must exist")
-   }
-   if (!parsedData.op1 || typeof parsedData.op1 != "number") {
-      throw new Error("field op1 of 'number' type must exist")
-   }
-   if (!parsedData.op2 || typeof parsedData.op2 != "number") {
-      throw new Error("field op2 of 'number' type must exist")
-   }
+function sendResponse(res: Response, status: number, result: number | string){
+    res.statusCode = status;
+    res.send(result);
 }
