@@ -1,15 +1,14 @@
 import { NextFunction, Request,Response } from "express";
+import _ from "lodash";
 export function validation(req: Request & {error: Error}, res: Response, next: NextFunction) {
-    const obj: any = req.body ?? req.params;
-    try {
+    let obj: any = req.body;
+    if(!obj|| _.isEmpty(obj)) {
+      obj = !req.params || _.isEmpty(req.params) ? req.query : req.params;
+    }
         dataValidation(obj);
         obj.op1 = +obj.op1;
         obj.op2 = +obj.op2;
         req.body = obj;
-    } catch(error){
-        req.error = error;
-        req.body = undefined;
-    }
     next();
 }
 function dataValidation(parsedData: any): void {

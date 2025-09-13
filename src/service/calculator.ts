@@ -1,11 +1,12 @@
-export class WrongOperationError {
-    constructor(public message: string) {
-       
+export class WrongOperationError extends Error {
+    constructor(message: string) {
+       super(message)
+       Object.setPrototypeOf(this, WrongOperationError.prototype);
     }
 }
  class CalculatorService {
     private  calculations: Record<string, (op1:number, op2:number)=>number> = {
-       "add": (op1, op2) => op1 + op2,
+       "add": (op1, op2) => +op1 + +op2,
        "mul": (op1, op2) => op1 * op2,
        "sub": (op1, op2) => op1 - op2,
        "div": (op1, op2) => op1 / op2,
