@@ -5,6 +5,7 @@ import { validation } from '../middleware/validation.ts';
 import morgan from 'morgan';
 import 'dotenv/config'
 import errorHandler from '../middleware/errosHandler.ts';
+import { CalculationDataSchema } from '../middleware/schemos.ts';
 
 const port = process.env.PORT || 3500;
 const app = express();
@@ -12,7 +13,7 @@ const app = express();
 app.listen(port, () => console.log(`listening on port ${port}`));
 app.use(express.json({limit: '1Mb'}));
 app.use(morgan('tiny'));
-app.use(validation); 
+app.use(validation(CalculationDataSchema)); 
 
 app.post("/api/calculator", (req: Request & {error: Error}, res: Response) => {
         const result = calculatorService.calculate(req.body as CalculationData)
@@ -24,7 +25,7 @@ app.get("/api/calculator", (req: Request & {error: Error}, res: Response)=> {
         sendResponse(res, 200, result);
 })
 
-app.get("/api/calculator/:operation/:op1/:op2", validation, (req: Request & {error: Error}, res: Response)=> {
+app.get("/api/calculator/:operation/:op1/:op2", validation(CalculationDataSchema), (req: Request & {error: Error}, res: Response)=> {
         const result = calculatorService.calculate(req.params as any)
         sendResponse(res, 200, result);
 })
