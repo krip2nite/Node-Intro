@@ -8,6 +8,7 @@ const CalculationDataSchema = z.object({
    op2: z.coerce.number()
 })
 
+
 export function validation(req: Request, res: Response, next: NextFunction) {
    let obj: any = req.body;
    if (!obj || _.isEmpty(obj)) {
